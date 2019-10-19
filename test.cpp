@@ -1,4 +1,5 @@
 #include <iostream>
+#include <string>
 using namespace std;
 class test{
 
@@ -44,6 +45,8 @@ int main()
     test *t = new test(5);
     t->f(3);
     delete t;
+    string stri="i am c";
+    cout<<stri;
     return 0;
 }
 
