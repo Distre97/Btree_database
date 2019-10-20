@@ -31,6 +31,7 @@ void table::Search(string type,string atri,long value,vector<vector<long>> v)
 		else
 			Error("opening index file");		
 	}
+}
 
 void table::Search_by_Index(string type,string atri,long value,
 	vector<vector<long>> v){
@@ -48,3 +49,10 @@ int table::Exist_index(string atri)
 	else
 		return 0;
 }
+
+void Error(string stri)
+{
+	cout<<"error in"<<str<<"\n";
+}
+
+

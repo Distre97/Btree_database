@@ -1,12 +1,14 @@
 //table.h
 #ifndef TABLE_H_INCLUDED
 #define TABLE_H_INCLUDED
+#endif
 
 #include <iostream>
 #include <fstream>
 #include <string>
 #include <vector>
 #include <map>
+#include <cassert>
 using namespace std;
 
 class table{
@@ -39,11 +41,7 @@ public:
     void Commit();
 
 
-
 };
 
 
-void Error(string stri)
-{
-    cout<<"error in"<<stri<<"\n";
-}
+void Error(string stri);
