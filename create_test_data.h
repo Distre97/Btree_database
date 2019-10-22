@@ -22,13 +22,14 @@ public:
 	vector<vector<long long>> data;
 	vector<string> atri;
 	vector<int> _size;//存储每个属性名的大小
+	map<string,int> atri_size;
 
 	//初始化数据
 	test(int number,string file_name){
 		this->_sum_size = 0;
 		this->_number = number;
 		this->_file_name = file_name;
-		this->_save_file.open(file_name,ios::app|ios::binary);
+		this->_save_file.open(file_name,ios::app);
 		if(!_save_file.is_open())
 			// assert(1);
 			cout<<"error for files open"<<endl;

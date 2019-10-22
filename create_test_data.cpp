@@ -29,7 +29,12 @@ void test::create_atri()
 		// cout<<" "<<atri;
 		test::_size.push_back(atri.size());//当前长度加入容器
 		test::_sum_size += atri.size();//总长度增加
+		atri = atri+'@';//作为属性名之间的分割符
 		test::atri.push_back(atri);//加入容器
+
+		//插入属性和属性名长度的键值对
+		test::atri_size.insert(make_pair(atri,atri.size()));
+		
 		atri.erase(atri.begin(),atri.end());//删除临时字符串
 		atri_len = (rand()%8)+3;//重置长度
 	}
@@ -97,9 +102,9 @@ void test::save_data()
 	cout<<"data success"<<endl;
 }
 
-void test::long_2_char(long long num,char* arr)
-{
-	arr = (char*)&num;
+// void test::long_2_char(long long num,char* arr)
+// {
+// 	arr = (char*)&num;
 	// arr = new char[8];
 	// int byt = 56;
 	// for(int i=7;i>=0;i--)
@@ -109,7 +114,7 @@ void test::long_2_char(long long num,char* arr)
 	// 	byt -= 8;
 	// }
 	// cout<<"_2_ ";
-}
+// }
 
 
 
