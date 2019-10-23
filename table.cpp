@@ -1,6 +1,7 @@
 #include "table.h"
-#include <iostream>
-using namespace std;
+#include "ulity.h"
+
+char r_count=0;
 
 /*******************************************
 /func:查找功能（未完成）
@@ -15,17 +16,17 @@ betwn表示小于某值，大于某值
 
 /param:查找返回的行数据
 ********************************************/
-void table::Search(string type,string atri,long value,vector<vector<long>> v)
+void table::Search(string type,string atri,long long value,vector<vector<long long>> v)
 {
 	ifstream index;
 	//先判断有没索引文件
-	if(Exist_index(atri)==1)
+	if(table::Exist_index(atri)==1)
 	{
 		index.open(atri);
 		if(index.is_open())
 		{
 			//有索引文件且能被打开，则使用索引搜索
-			Search_by_Index(type,atri,value,v);
+			table::Search_by_Index(type,atri,value,v);
 		}
 		else
 			Error("opening index file");
@@ -33,11 +34,11 @@ void table::Search(string type,string atri,long value,vector<vector<long>> v)
 	else
 	{
 		//没有的话先建立再查询
-		Index(1,atri);
+		table::Index(1,atri);
 		index.open(atri);
 		if(index.is_open())
 		{
-			Search_by_Index(type,atri,value,v);
+			table::Search_by_Index(type,atri,value,v);
 		}
 		else
 			Error("opening index file");		
@@ -56,8 +57,8 @@ betwn表示小于某值，大于某值
 
 /param:查找返回的行数据
 ********************************************/
-void table::Search_by_Index(string type,string atri,long value,
-	vector<vector<long>> v){
+void table::Search_by_Index(string type,string atri,long long value,
+	vector<vector<long long>> v){
 	cout<<"search by index\n";
 }
 /*******************************************
@@ -104,18 +105,20 @@ void table::Index(int type,string atri)
 
 /param:返回的数据容器
 ********************************************/
-void Read_data_and_atri(vector<string> atri,vector<vector<long long>> data)
+void table::Read_data_and_atri(vector<string> atri,vector<vector<long long>> data)
 {
-	cout<<"read  "<<endl;	
-}
-/*******************************************
-/func:打印错误信息
+	RSpinLock<char> r1(&r_count);
+	{
+		ifstream r_atri;
+		r_atri.open(this->file_name,ios::in);
 
-/param：错误提示字符串
-********************************************/
-void Error(string stri)
+		r_atri.close();
+	}
+}
+
+string table::get_file_name()
 {
-	cout<<"error in"<<str<<"\n";
+	return this->file_name;
 }
 
 

@@ -10,6 +10,15 @@
 #include <sys/types.h>
 using namespace std;
 
+/*******************************************
+
+实现互斥访问
+RSoinLock实现读者访问，每次申请4个r_count;
+WSpinLock实现写者访问，只有r_count为0时才可写入
+
+********************************************/
+
+/* 碧波沉醉天江水，船笛幽扬清风月  */
 
 template<typename T>
 class RSpinLock
