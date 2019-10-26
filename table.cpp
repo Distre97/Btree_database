@@ -41,7 +41,7 @@ void table::Search(string type,string atri,long long value,vector<vector<long lo
 			table::Search_by_Index(type,atri,value,v);
 		}
 		else
-			Error("opening index file");		
+			Error("opening index file");
 	}
 }
 /*******************************************
@@ -99,19 +99,64 @@ void table::Index(int type,string atri)
 	cout<<"create index!"<<endl;
 }
 /*******************************************
-/func:读取文件并存入容器(未完成)
+/func:读取文件并存入容器，初始化表
 
 /param：返回的属性名容器
 
 /param:返回的数据容器
 ********************************************/
-void table::Read_data_and_atri(vector<string> atri,vector<vector<long long>> data)
+void table::Read_data_and_atri(vector<string> atri,vector<vector<long long>> _data)
 {
+	
+	int i,j=0;
+	ifstream r_atri;
+	char a;
+	long long d;
+	vector<long long> data;
+	r_atri.open(this->file_name,ios::in);
+	r_atri.seekg(0,ios::beg);
+	long pos = r_atri.tellg();
+	string s="";
 	RSpinLock<char> r1(&r_count);
 	{
-		ifstream r_atri;
-		r_atri.open(this->file_name,ios::in);
 
+		//读取属性名序列
+		for(i=0;i<100;i++)
+		{
+			while(true)
+			{
+				r_atri.read(&a,1);
+				if(a!='@')
+				{
+					// cout<<a<<" ";
+					s+=a;
+				}
+				else
+					break;
+			}
+
+			atri.push_back(s);//读入内存
+			table::atri_l = table::atri_l+1+s.size();
+			s.erase(s.begin(),s.end());
+		}
+		//读取每一行，读入内存
+		// int d_c = table::get_data_colum();
+		// // printf("%d\n", d_c);
+		// while(j<d_c)
+		// {
+		// 	data.clear();
+		// 	for(i=0;i<100;i++)
+		// 	{
+		// 		r_atri.read((char*)&d,8);
+		// 		data.push_back(d);
+		// 		printf("%lld ", d);
+				
+		// 		// cout<<data.at(i)<<" ";
+		// 	}
+		// 	_data.push_back(data);
+
+		// 	j++;
+		// }
 		r_atri.close();
 	}
 }
@@ -120,5 +165,37 @@ string table::get_file_name()
 {
 	return this->file_name;
 }
+int table::_get_atri_l()
+{
+	return table::atri_l;
+}
+/*******************************************
+/func:读取文件大小
 
+/param：文件名
 
+/return:文件大小,long型
+********************************************/
+int get_file_length(string file_name)
+{
+	long l,m;
+	ifstream f(file_name,ios::in);
+	l = f.tellg();
+	f.seekg(0,ios::end);
+	m = f.tellg();
+	f.close();
+	return (int)(m-l);
+}
+/*******************************************
+/func:读取文件的数据行数
+
+/return:数据行数
+********************************************/
+int table::get_data_colum()
+{
+	int f_s = get_file_length(table::get_file_name());
+	int a_l = table::_get_atri_l();
+	int d_c = (f_s-a_l)/800;
+	// printf("%d %d %d\n", f_s,a_l,d_c);
+	return d_c;
+}

@@ -8,6 +8,7 @@
 #include <map>
 #include <fstream>
 #include <cassert>
+#include <random>
 using namespace std;
 
 class test{
@@ -29,7 +30,7 @@ public:
 		this->_sum_size = 0;
 		this->_number = number;
 		this->_file_name = file_name;
-		this->_save_file.open(file_name,ios::app);
+		this->_save_file.open(file_name,ios::out|ios::app);
 		if(!_save_file.is_open())
 			// assert(1);
 			cout<<"error for files open"<<endl;
@@ -40,7 +41,7 @@ public:
 			create_data();
 			save_atri();
 			save_data();
-			cout<<"over!"<<endl;
+			// cout<<"over!"<<endl;
 		}
 	}
 	~test(){
@@ -62,6 +63,12 @@ public:
 	//把long long类型转化为char*类型
 	// void long_2_char(long long num,char* arr);
 
+};
+
+struct int_2_l_l
+{
+	int a;
+	int b;
 };
 
 #endif

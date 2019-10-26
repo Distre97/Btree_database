@@ -25,6 +25,7 @@ private:
 public:
     table(string name){//初始化时读取文件
         this->file_name = name;
+        Read_data_and_atri(atri,data);
     }
 
     ~table(){//程序结束时关闭文件
@@ -33,6 +34,7 @@ public:
 
 	ifstream in_file;//用于读取
     ofstream out_file;//用于写入新增的数据
+    int atri_l=0;//属性名总长度
     vector<string> _atri_in_file;//从文件中获取属性名
     vector<vector<long long>> _data_in_file;//从文件中获取数据
     vector<string> atri;//需要查找的属性
@@ -47,6 +49,8 @@ public:
     void Index(int type,string atri);
     void Read_data_and_atri(vector<string> atri,vector<vector<long long>> data);
     string get_file_name();
+    int _get_atri_l();
+    int get_data_colum();
 };
 
-
+int get_file_length(string file_name);

@@ -1,8 +1,6 @@
 #include "create_test_data.h"
 #include <stdlib.h>
 #include <time.h>
-#include <iostream>
-using namespace std;
 
 void test::create_atri()
 {
@@ -24,8 +22,10 @@ void test::create_atri()
 				if((r>=65&&r<=90)||(r>=97&&r<=122))
 					break;
 			}
+			printf("%c", r);
 			atri += (char)r;
 		}
+		printf(" ");
 		// cout<<" "<<atri;
 		test::_size.push_back(atri.size());//当前长度加入容器
 		test::_sum_size += atri.size();//总长度增加
@@ -42,7 +42,8 @@ void test::create_atri()
 
 void test::create_data()
 {
-	long a=0;
+	long long a=0;
+	int_2_l_l temp;
 	vector<long long> data;
 	srand((unsigned)time(NULL));
 	for(int j=0;j<test::_number;j++)
@@ -51,14 +52,15 @@ void test::create_data()
 		data.clear();
 		for(int i=0;i<100;i++)
 		{
-			int temp1 = rand();
-			int temp2 = rand();
-			a = (long)(temp1*temp2);
+			temp.a = rand();
+			temp.b = rand();
+			a = (long long)(temp.a*temp.b)%1000;
 			data.push_back(a);
+			// printf("%d %d %lld;",temp.a,temp.b,a);
 		}
 		test::data.push_back(data);
 	}
-	cout<<"create success"<<endl;
+	// cout<<"create success"<<endl;
 }
 
 //写入属性名
@@ -75,9 +77,10 @@ void test::save_atri()
 		// buffer = new char [l];
 		// test::_save_file<<test::atri.at(i)<<"@";
 		
-		test::_save_file.write((char*)&test::atri[i],test::_size.at(i));
+		// test::_save_file.write((char*)&test::atri[i],test::_size.at(i));
+		test::_save_file << test::atri[i];
 	}
-	cout<<"write success"<<endl;
+	// cout<<"write success"<<endl;
 }
 
 //写具体数据
@@ -85,7 +88,7 @@ void test::save_data()
 {
 	char* arr;
 	test::_save_file.seekp(0,ios::end);//从流末尾写入
-	cout<<test::data.size();
+	// cout<<test::data.size();
 	// cout<<test::_number<<endl;
 	// string show = "";
 	for(int i=0;i<test::_number;i++)
@@ -99,7 +102,7 @@ void test::save_data()
 		// test::_save_file<<endl;
 		
 	}
-	cout<<"data success"<<endl;
+	// cout<<"data success"<<endl;
 }
 
 // void test::long_2_char(long long num,char* arr)
