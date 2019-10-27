@@ -4,7 +4,7 @@
 char r_count=0;
 
 /*******************************************
-/func:查找功能（未完成）
+/func:查找功能
 
 /param:查找类型
 bigt表示大于等于，smallt表示小于等于，
@@ -20,7 +20,7 @@ void table::Search(string type,string atri,long long value,vector<vector<long lo
 {
 	ifstream index;
 	//先判断有没索引文件
-	if(table::Exist_index(atri)==1)
+	if(table::Exist_index(atri)==true)
 	{
 		index.open(atri);
 		if(index.is_open())
@@ -34,8 +34,10 @@ void table::Search(string type,string atri,long long value,vector<vector<long lo
 	else
 	{
 		//没有的话先建立再查询
-		table::Index(1,atri);
-		index.open(atri);
+		BTree<long long> a;
+		a=table::Index(atri);
+		string in_name=atri+".index";
+		index.open(in_name);
 		if(index.is_open())
 		{
 			table::Search_by_Index(type,atri,value,v);
@@ -66,14 +68,14 @@ void table::Search_by_Index(string type,string atri,long long value,
 
 /param:索引文件名
 ********************************************/
-int table::Exist_index(string atri)
+bool table::Exist_index(string atri)
 {
 	ifstream file;
 	file.open(atri);
 	if(file.is_open())
-		return 1;
+		return true;
 	else
-		return 0;
+		return false;
 }
 /*******************************************
 /func:添加一行数据
@@ -87,16 +89,44 @@ int table::Append(string* atri,int* value)
 	cout<<"Append"<<endl;
 }
 /*******************************************
-/func:生成索引文件（未完成）
+/func:生成文件名索引（未完成）
 
-/param：索引类型，
-0表示属性名索引，1表示单个属性的值索引
-
-/param:索引文件名
+/param:索引名
 ********************************************/
-void table::Index(int type,string atri)
+BTree<char> table::Index_atri(string atri)
 {
-	cout<<"create index!"<<endl;
+	BTree<char> c(TREE_SIZE);
+
+	return c;
+}
+/*******************************************
+/func:生成值索引（未完成）
+
+/param:索引的属性名
+********************************************/
+BTree<long long> table::Index(string atri)
+{
+	int n;
+	BTree<long long> a(TREE_SIZE);
+	int col = table::get_data_colum();
+	long long data;
+
+	for(int i=0;i<100;i++)
+	{
+		if(this->_data_in_file.at(i)==atri)
+		{
+			n=i;
+			break;
+		}
+	}
+	ifstream r_data;
+	r_data.open(this->file_name.ios::in);
+	r_data.seekg(this->atri_l,ios::beg);
+	for(int j=0;j<col;j++)
+	{
+		r_data.read(&data,8);
+	}
+	return a;
 }
 /*******************************************
 /func:读取文件并存入容器，初始化表
@@ -105,7 +135,7 @@ void table::Index(int type,string atri)
 
 /param:返回的数据容器
 ********************************************/
-void table::Read_data_and_atri(vector<string> atri,vector<vector<long long>> _data)
+void table::Read_atri(vector<string> atri)
 {
 	
 	int i,j=0;
@@ -128,7 +158,6 @@ void table::Read_data_and_atri(vector<string> atri,vector<vector<long long>> _da
 				r_atri.read(&a,1);
 				if(a!='@')
 				{
-					// cout<<a<<" ";
 					s+=a;
 				}
 				else
@@ -150,7 +179,7 @@ void table::Read_data_and_atri(vector<string> atri,vector<vector<long long>> _da
 		// 		r_atri.read((char*)&d,8);
 		// 		data.push_back(d);
 		// 		printf("%lld ", d);
-				
+
 		// 		// cout<<data.at(i)<<" ";
 		// 	}
 		// 	_data.push_back(data);
@@ -196,6 +225,5 @@ int table::get_data_colum()
 	int f_s = get_file_length(table::get_file_name());
 	int a_l = table::_get_atri_l();
 	int d_c = (f_s-a_l)/800;
-	// printf("%d %d %d\n", f_s,a_l,d_c);
 	return d_c;
 }

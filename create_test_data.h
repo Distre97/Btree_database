@@ -32,24 +32,18 @@ public:
 		this->_file_name = file_name;
 		this->_save_file.open(file_name,ios::out|ios::app);
 		if(!_save_file.is_open())
-			// assert(1);
 			cout<<"error for files open"<<endl;
 		else
 		{
-			// _save_file.seekp(0,ios::end);
 			create_atri();
 			create_data();
 			save_atri();
 			save_data();
-			// cout<<"over!"<<endl;
 		}
 	}
 	~test(){
 		//关闭文件释放内存
 		this->_save_file.close();
-		// vector<vector<long long>>.swap(data);
-		// vector<string>.swap(atri);
-		// vector<int>.swap(_size);
 	}
 
 	//随机产生属性名
@@ -60,9 +54,6 @@ public:
 	void save_data();
 	//保存属性名
 	void save_atri();
-	//把long long类型转化为char*类型
-	// void long_2_char(long long num,char* arr);
-
 };
 
 struct int_2_l_l

@@ -1,5 +1,9 @@
 #ifndef BTREENODE_H_INCLUDED
 #define BTREENODE_H_INCLUDED
+#include <iostream>
+#include <cstdlib>
+using namespace std;
+
 //声明模板类BTree
 template<typename Type> class BTree;
  
@@ -53,22 +57,22 @@ public:
 
     void Destroy(BTreeNode<Type> *root);
 
- /* 醉后不知天在水，满船秋梦压星河 */
+ /* 醉后不知天在水，满船清梦压星河 */
 
 private:
-    int m_nsize;
-    int m_nMaxSize;
-    Type *m_pkey;
-    BTreeNode<Type> *m_pparent;
-    BTreeNode<Type> **m_ptr;
-    static const Type m_Infinity = 1000;//每个节点可以存储的关键字数
+    int m_nsize;//当前节点中关键字数
+    int m_nMaxSize;//每一个叶节点中所存的关键字数
+    Type *m_pkey;//关键字链表
+    BTreeNode<Type> *m_pparent;//父节点
+    BTreeNode<Type> **m_ptr;//孩子节点链表
+    static const Type m_Infinity = 100000;//无穷大值，表示该节点关键字为空
 };
 
 //查找到后保存结果的三元组
 template<typename Type> struct Triple{
-    BTreeNode<Type> *m_pfind;
-    int m_nfind;
-    bool m_ntag;
+    BTreeNode<Type> *m_pfind;//该节点
+    int m_nfind;//节点中对应关键字存在的位置
+    bool m_ntag;//是否已经存在，或是否保存过
 };
 /*******************************************
 /func:剪枝
