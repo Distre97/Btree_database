@@ -1,10 +1,15 @@
+#define BIGERTHEN 1
+#define SMALLTHEN -1
+#define BETWEEN 0
+#define RETURN_SEARCH_COUNT 10
 #include <iostream>
+#include <vector>
 // extern "C"{
 // #include <cstdlib>
 // }
 
 using namespace std;
-
+vector<int > result;
 //声明模板类BTree
 template<typename Type> class BTree;
 
@@ -13,7 +18,6 @@ template<typename Type> struct Pair
     Type item;
     int num;
 };
-
 template<typename Type> class BTreeNode{
 public:
     friend BTree<Type>;//使其成为Node的友元类
@@ -73,7 +77,7 @@ public:
 private:
     int m_nsize;//当前节点中关键字数
     int m_nMaxSize;//每一个叶节点中所存的关键字数
-    Pair<Type> *m_pkey;//关键字链表
+    Pair<Type> *m_pkey;//关键字表
     BTreeNode<Type> *m_pparent;//父节点
     BTreeNode<Type> **m_ptr;//孩子节点链表
     static const Type m_Infinity = 100000;//无穷大值，表示该节点关键字为空
@@ -89,6 +93,7 @@ template<typename Type> struct Triple{
 
 template<typename Type> class BTree{
 public:
+    BTreeNode<Type> *m_proot;
     BTree(int size): m_nMaxSize(size), m_proot(NULL){}
     ~BTree();
     Triple<Type> Search(const Type item);
@@ -97,9 +102,10 @@ public:
     // bool Remove(const Type item);
     // BTreeNode<Type> *GetParent(const Type item);    
     int Insert(const Pair<Type> item);
- 
+    void Print(BTreeNode<Type> *start,int n=0);
+    void Search_(BTreeNode<Type> *start, int type,Type item,Type item2=0,int n=0); 
 private:
-    BTreeNode<Type> *m_proot;
+ 
     const int m_nMaxSize;
 
     void InsertKey(BTreeNode<Type> *pinsert, int n, const Pair<Type> item, BTreeNode<Type> *pright); 
@@ -109,15 +115,21 @@ private:
     // void RightAdjust(BTreeNode<Type> *pleft, BTreeNode<Type> *pparent, int min, int n); 
 
 };
-
-
-
-
-
-
-
-
-
+/*******************************************
+*                                           *
+*                   定                      *
+*                                           *
+*                                           *
+*                                           *
+*                   义                      *
+*                                           *
+*                                           *
+*                                           *
+*                   区                      *
+*                                           *
+*                                           *
+*                                           *
+********************************************/
 
 /*******************************************
 /func:剪枝
@@ -149,11 +161,15 @@ template<typename Type> Triple<Type> BTree<Type>::Search(const Type item){
     Triple<Type> result;
     BTreeNode<Type> *pmove = m_proot, *parent = NULL;
     int i = 0;
-    while (pmove){
+    while (pmove!=NULL){
         i = -1;
-        //把指针移动到指定的位置
-        while (item > pmove->m_pkey[++i].item); 
-        //找到了该节点，返回结果
+        //找到指定的位置
+        // printf("%d\n", item);
+        while (item > pmove->m_pkey[++i].item){
+            // printf("%d %d\n", pmove->m_pkey[i].item,i); 
+        }
+
+        //找到了该节点且只有一个，返回结果
         if (pmove->m_pkey[i].item == item){
             result.m_pfind = pmove;
             result.m_nfind = i;
@@ -167,13 +183,13 @@ template<typename Type> Triple<Type> BTree<Type>::Search(const Type item){
         parent = pmove;
         pmove = pmove->m_ptr[i];
     }
-    //没有找到，返回最近的
+    //没有找到，返回前一个最近的叶子节点
     result.m_pfind = parent;
     result.m_nfind = i;
     result.m_ntag = 0;
-    result.m_item.item = pmove->m_pkey[i].item;
-    result.m_item.num = pmove->m_pkey[i].num;
-    printf("the item is not here,but we return the closest item!\n");
+    // result.m_item.item = pmove->m_pkey[--i].item;
+    // result.m_item.num = pmove->m_pkey[--i].num;
+    // printf("the item is not here,but we return the closest item!\n");
     return result;
 }
 /*******************************************
@@ -243,7 +259,7 @@ template<typename Type> int BTree<Type>::Insert(const Pair<Type> item){
         newnode = new BTreeNode<Type>(this->m_nMaxSize);
  
         //拆分
-        for (int i=m+1; i<=pinsert->m_nsize; i++){      
+        for (int i=m+1; i<=pinsert->m_nsize; i++){//截取一半往后移   
             newnode->m_pkey[i-m-1]= pinsert->m_pkey[i];
             newnode->m_ptr[i-m-1] = pinsert->m_ptr[i];
             pinsert->m_pkey[i].item = pinsert->m_Infinity;
@@ -253,7 +269,7 @@ template<typename Type> int BTree<Type>::Insert(const Pair<Type> item){
         newnode->m_nsize = pinsert->m_nsize - m - 1;
         pinsert->m_nsize = m;
  
-        for (int i=0; i<=newnode->m_nsize; i++){
+        for (int i=0; i<=newnode->m_nsize; i++){//挂在右边的节点下
             if (newnode->m_ptr[i]){
                 newnode->m_ptr[i]->m_pparent = newnode;
                 for (int j=0; j<=newnode->m_ptr[i]->m_nsize; j++){
@@ -263,7 +279,7 @@ template<typename Type> int BTree<Type>::Insert(const Pair<Type> item){
                 }
             }
         }
-        for (int i=0; i<=pinsert->m_nsize; i++){
+        for (int i=0; i<=pinsert->m_nsize; i++){//处理两边的平衡
             if (pinsert->m_ptr[i]){
                 pinsert->m_ptr[i]->m_pparent = pinsert;
                 for (int j=0; j<=pinsert->m_nsize; j++){
@@ -276,6 +292,7 @@ template<typename Type> int BTree<Type>::Insert(const Pair<Type> item){
         
         key = pinsert->m_pkey[m];
         pright = newnode;
+        //更新父节点（根节点）
         if (pinsert->m_pparent){
             pparent = pinsert->m_pparent;
             n = -1;
@@ -285,7 +302,7 @@ template<typename Type> int BTree<Type>::Insert(const Pair<Type> item){
             newnode->m_pparent = pinsert->m_pparent;
             pinsert = pparent;
         }
-        else {
+        else {//没有就新建一个，把叶子提升为父节点
             m_proot = new BTreeNode<Type>(this->m_nMaxSize);
             m_proot->m_nsize = 1;
             m_proot->m_pkey[1] = m_proot->m_pkey[0];
@@ -456,3 +473,120 @@ template<typename Type> void BTree<Type>::InsertKey(BTreeNode<Type> *pinsert, in
 //     Triple<Type> result = this->Search(item);
 //     return result.m_pfind->m_pparent;
 // }
+template<typename Type> void BTree<Type>::Print(BTreeNode<Type> *start,int n)
+{
+    if (NULL == start){
+        return;
+    }
+    if (start->m_ptr[0]){
+        Print(start->m_ptr[0], n+1);    
+    }
+    else {
+        for (int j=0; j<n; j++){
+            cout << "     ";
+        }
+        cout << "NULL" << endl;
+    }
+ 
+    for (int i=0; i<start->m_nsize; i++){
+        for (int j=0; j<n; j++){
+            cout << "     ";
+        }
+        cout << start->m_pkey[i].item << "," << start->m_pkey[i].num << "--->" <<endl;
+        if (start->m_ptr[i+1]){
+            Print(start->m_ptr[i+1], n+1);
+        }
+        else {
+            for (int j=0; j<n; j++){
+                cout << "     ";
+            }
+            cout << "NULL" << endl;
+        }
+    }
+}
+
+template<typename Type> void BTree<Type>::Search_(BTreeNode<Type> *start, int type,Type item,Type item2,int n){
+    // BTreeNode<Type> *start = m_proot,*par=NULL;
+
+    if(NULL == start){
+        cout << "error index\n";
+        return;
+    }
+    // bool flag=true;
+    switch(type)
+    {
+        case SMALLTHEN:
+            if(start->m_ptr[0]){
+                Search_(start->m_ptr[0],type,item,item2,n+1);
+            }
+            for(int i=0; i<start->m_nsize; i++){
+                if(start->m_pkey[i].item < item){
+                    result.push_back(start->m_pkey[i].num);
+                }
+                else
+                    break;
+                if(start->m_ptr[i+1]){
+                    Search_(start->m_ptr[i+1],type,item,item2,n+1);
+                }
+            }
+            break;
+        case BIGERTHEN:
+            if(start->m_ptr[1]){
+
+                Search_(start->m_ptr[1],type,item,item2,n+1);
+            }
+            for(int i=start->m_nsize-1; i>=0; i--){
+                // if(start->m_pkey[i].item > item){
+                    // printf("sss\n");
+                    printf("%d  ", start->m_pkey[i].item);
+                    // result.push_back(start->m_pkey[i].num);
+                // }
+                // else
+                //     break;
+                if(start->m_ptr[i-1]){
+                    Search_(start->m_ptr[i-1],type,item,item2,n+1);
+                }
+            }
+            break;
+        case BETWEEN:
+            // if(item2 == 0)
+            // {
+            //     cout<<"error! only one item\n";
+            //     break;
+            // }
+            // j=0;
+            // while(start!=NULL && start->m_pkey[++i].item<=item);
+            // while(start!=NULL && start->m_pkey[i].item>item && start->m_pkey[i].item<item2){
+            //     result[j] = start->m_pkey[i].num;
+            //     j++;
+            //     if(j>=RETURN_SEARCH_COUNT){break;}
+            //     i++;
+            // }
+            break;
+        default:
+            cout<<"error search type\n";
+            break;
+    }
+    // while (pmove!=NULL){
+    //     i = -1;
+    //     //找到指定的位置
+    //     // printf("%d\n", item);
+    //     while (item > pmove->m_pkey[++i].item){
+    //         // printf("%d %d\n", pmove->m_pkey[i].item,i); 
+    //     }
+
+    //     //找到了该节点且只有一个，返回结果
+    //     if (pmove->m_pkey[i].item == item && pmove->m_pkey[i+1].item > item){
+    //         result.m_pfind = pmove;
+    //         result.m_nfind = i;
+    //         result.m_ntag = 1;
+    //         result.m_item.item = item;
+    //         result.m_item.num = pmove->m_pkey[i].num;
+    //         printf("the item is here!\n");
+    //         return result;
+    //     }
+    //     //没有找到则继续查找其孩子节点，递归的寻找
+    //     parent = pmove;
+    //     pmove = pmove->m_ptr[i];
+    // }
+}

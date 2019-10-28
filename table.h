@@ -3,6 +3,9 @@
 #define TABLE_H_INCLUDED
 #define TREE_SIZE 4
 #define COLUM_SIZE 800
+#define BIGERTHEN "bigt"
+#define SMALLTHEN "smallt"
+#define BETWEEN "betwn"
 
 #include <fstream>
 #include <string>
@@ -39,10 +42,10 @@ public:
 
     /* 两两椒峰，铜台玉竹，赤珠更醉人 */
 
-	void Search(string type,string atri,long long value,vector<vector<long long>> v);
-    void Search_by_Index(string type,string atri,long long value,vector<vector<long long>> v);
+	void Search(string type,string atri,long long* value,vector<vector<long long>> v);
+    void Search_by_Index(string type,string atri,long long value,vector<vector<long long>> v,BTree<long long > a);
     bool Exist_index(string atri);
-    int Append(string* atri,int* value);
+    bool Append(string* atri,int* value);
     BTree<char> Index_atri(string atri);
     BTree<long long> Index(string atri);
     void Read_atri(vector<string> atri);
@@ -50,7 +53,8 @@ public:
     int _get_atri_l();
     int get_data_colum();
 };
-
+BTree<long long> Index_from_files(string file_name);
 int get_file_length(string file_name);
+int get_index_length(string name);
 
 #endif

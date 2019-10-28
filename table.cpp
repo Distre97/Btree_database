@@ -16,35 +16,36 @@ betwn表示小于某值，大于某值
 
 /param:查找返回的行数据
 ********************************************/
-void table::Search(string type,string atri,long long value,vector<vector<long long>> v)
+void table::Search(string type,string atri,long long* value,vector<vector<long long > > v)
 {
 	ifstream index;
+	string in_name=atri+".index";
+	BTree<long long> a;
 	//先判断有没索引文件
-	if(table::Exist_index(atri)==true)
+	if(table::Exist_index(in_name)==true)
 	{
-		index.open(atri);
+		index.open(in_name,ios::in);
 		if(index.is_open())
 		{
 			//有索引文件且能被打开，则使用索引搜索
-			table::Search_by_Index(type,atri,value,v);
+			table::Search_by_Index(type,atri,value,v,a);
 		}
 		else
 			Error("opening index file");
 	}
 	else
 	{
-		//没有的话先建立再查询
-		BTree<long long> a;
+		//没有的话先建立再查询	
 		a=table::Index(atri);
-		string in_name=atri+".index";
-		index.open(in_name);
+		index.open(in_name,ios::in);
 		if(index.is_open())
 		{
-			table::Search_by_Index(type,atri,value,v);
+			table::Search_by_Index(type,atri,value,v,a);
 		}
 		else
 			Error("opening index file");
 	}
+	a.Destory();
 }
 /*******************************************
 /func:通过索引查找对应数据（未完成）
@@ -59,9 +60,22 @@ betwn表示小于某值，大于某值
 
 /param:查找返回的行数据
 ********************************************/
-void table::Search_by_Index(string type,string atri,long long value,
-	vector<vector<long long>> v){
-	cout<<"search by index\n";
+void table::Search_by_Index(string type,string atri,long long* value,
+	vector<vector<long long>> v,BTree<long long > a){
+	long long min;
+	int i,j;
+
+	switch(type){
+		case BIGERTHEN:
+			break;
+		case SMALLTHEN:
+			break;
+		case BETWEEN:
+			break;
+		default:
+			Error("search type");
+			break;
+	}
 }
 /*******************************************
 /func:判断是否存在名为atri的索引文件
@@ -78,13 +92,13 @@ bool table::Exist_index(string atri)
 		return false;
 }
 /*******************************************
-/func:添加一行数据
+/func:添加一行数据()
 
 /param:属性名组
 
 /param:对应值组
 ********************************************/
-int table::Append(string* atri,int* value)
+bool table::Append(string* atri,int* value)
 {
 	cout<<"Append"<<endl;
 }
@@ -100,33 +114,60 @@ BTree<char> table::Index_atri(string atri)
 	return c;
 }
 /*******************************************
-/func:生成值索引（未完成）
+/func:生成值索引
 
 /param:索引的属性名
 ********************************************/
 BTree<long long> table::Index(string atri)
 {
 	int n;
-	BTree<long long> a(TREE_SIZE);
+	char* arr;	
+	string in_name=atri+".index";	
 	int col = table::get_data_colum();
 	long long data;
 
+	//获取目标属性在文件中的位置
 	for(int i=0;i<100;i++)
 	{
-		if(this->_data_in_file.at(i)==atri)
+		if(this->_atri_in_file.at(i)==atri)
 		{
 			n=i;
 			break;
 		}
 	}
-	ifstream r_data;
-	r_data.open(this->file_name.ios::in);
-	r_data.seekg(this->atri_l,ios::beg);
-	for(int j=0;j<col;j++)
+
+	long pos=this->atri_l;//获取数据在文件中的开始位置
+	Pair<long long> p;//保存数据用于插入的键值对
+	
+	//插入索引，并写入索引文件同时进行
+	//保证读并发，此时由于还没创建索引文件
+	//所以不用保证写并发
+	RSpinLock<char> r1(&r_count);
 	{
-		r_data.read(&data,8);
+		BTree<long long> a(TREE_SIZE);
+		ofstream index;//写入的索引文件流
+		index.open(in_name,ios::out|ios::app);
+		index.seekp(0,ios::end);
+		ifstream r_data;//读原文件流
+		r_data.open(this->file_name.ios::in);
+		for(int j=0;j<col;j++)
+		{
+			pos += COLUM_SIZE*j;
+			r_data.seekg(pos);
+			r_data.read(&data,8);
+			p.item = data;
+			p.num = j;
+			a.Insert(p);
+			arr = (char*)&data;
+			index.write(arr,8);
+			index.write((char*)&j,4);
+		}
+		r_data.close();
+		index.close();
+		a.Destory();
+		return a;
 	}
-	return a;
+
 }
 /*******************************************
 /func:读取文件并存入容器，初始化表
@@ -189,6 +230,37 @@ void table::Read_atri(vector<string> atri)
 		r_atri.close();
 	}
 }
+/*******************************************
+/func:读取索引文件
+
+/param：文件名
+
+/return:索引的B+树
+********************************************/
+BTree<long long> Index_from_files(string file_name)
+{
+	BTree<long long> a;
+	Pair<long long> temp;
+	ifstream ind;
+	//读写互斥
+	RSpinLock<char> r1(&r_count);
+	{
+		ind.open(file_name,ios::in);
+		if(ind.is_open())
+		{
+			ind.seekg(0,ios::beg);
+			for(int i=0;i<get_index_length(file_name);i++)
+			{
+				ind.read((char*)&temp.item,8);
+				ind.read((char*)&temp.num,4);
+				a.Insert(temp);
+			}
+		}
+		ind.close();
+	}
+	return a;
+}
+
 
 string table::get_file_name()
 {
@@ -203,7 +275,7 @@ int table::_get_atri_l()
 
 /param：文件名
 
-/return:文件大小,long型
+/return:文件大小,int型
 ********************************************/
 int get_file_length(string file_name)
 {
@@ -214,6 +286,18 @@ int get_file_length(string file_name)
 	m = f.tellg();
 	f.close();
 	return (int)(m-l);
+}
+/*******************************************
+/func:读取索引大小
+
+/param：文件名
+
+/return:文件大小,int型
+********************************************/
+int get_index_length(string name)
+{
+	int l = get_file_length(name);
+	return (int)l/12;
 }
 /*******************************************
 /func:读取文件的数据行数
