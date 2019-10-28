@@ -1,6 +1,5 @@
 #include "table.h"
 #include "ulity.h"
-
 char r_count=0;
 
 /*******************************************
@@ -16,22 +15,17 @@ betwn表示小于某值，大于某值
 
 /param:查找返回的行数据
 ********************************************/
-void table::Search(string type,string atri,long long* value,vector<vector<long long > > v)
+void table::Search(int type,string atri,long long value1,long long value2)
 {
 	ifstream index;
 	string in_name=atri+".index";
-	BTree<long long> a;
+	BTree<long long> a(TREE_SIZE);
 	//先判断有没索引文件
 	if(table::Exist_index(in_name)==true)
 	{
-		index.open(in_name,ios::in);
-		if(index.is_open())
-		{
-			//有索引文件且能被打开，则使用索引搜索
-			table::Search_by_Index(type,atri,value,v,a);
-		}
-		else
-			Error("opening index file");
+		//有索引文件且能被打开，则使用索引搜索
+		a = Index_from_files(in_name);
+		a.Search_(a.m_proot,type,value1,value2);
 	}
 	else
 	{
@@ -40,12 +34,15 @@ void table::Search(string type,string atri,long long* value,vector<vector<long l
 		index.open(in_name,ios::in);
 		if(index.is_open())
 		{
-			table::Search_by_Index(type,atri,value,v,a);
+			a.Search_(a.m_proot,type,value1,value2);
 		}
-		else
+		else{
 			Error("opening index file");
+			return;
+		}
 	}
-	a.Destory();
+	Print();
+	result.erase(result.begin(),result.end());
 }
 /*******************************************
 /func:通过索引查找对应数据（未完成）
@@ -60,23 +57,12 @@ betwn表示小于某值，大于某值
 
 /param:查找返回的行数据
 ********************************************/
-void table::Search_by_Index(string type,string atri,long long* value,
-	vector<vector<long long>> v,BTree<long long > a){
-	long long min;
-	int i,j;
+// void table::Search_by_Index(string type,string atri,long long* value,
+// 	vector<vector<long long>> v,BTree<long long > a){
+// 	long long min;
+// 	int i,j;
 
-	switch(type){
-		case BIGERTHEN:
-			break;
-		case SMALLTHEN:
-			break;
-		case BETWEEN:
-			break;
-		default:
-			Error("search type");
-			break;
-	}
-}
+// }
 /*******************************************
 /func:判断是否存在名为atri的索引文件
 
@@ -98,7 +84,7 @@ bool table::Exist_index(string atri)
 
 /param:对应值组
 ********************************************/
-bool table::Append(string* atri,int* value)
+bool table::Append(vector<string> atri,vector<int> value)
 {
 	cout<<"Append"<<endl;
 }
@@ -134,6 +120,7 @@ BTree<long long> table::Index(string atri)
 			n=i;
 			break;
 		}
+		Error("No attribute in data files!");
 	}
 
 	long pos=this->atri_l;//获取数据在文件中的开始位置
@@ -149,12 +136,12 @@ BTree<long long> table::Index(string atri)
 		index.open(in_name,ios::out|ios::app);
 		index.seekp(0,ios::end);
 		ifstream r_data;//读原文件流
-		r_data.open(this->file_name.ios::in);
+		r_data.open(this->file_name,ios::in);
 		for(int j=0;j<col;j++)
 		{
 			pos += COLUM_SIZE*j;
 			r_data.seekg(pos);
-			r_data.read(&data,8);
+			r_data.read((char*)&data,8);
 			p.item = data;
 			p.num = j;
 			a.Insert(p);
@@ -164,7 +151,6 @@ BTree<long long> table::Index(string atri)
 		}
 		r_data.close();
 		index.close();
-		a.Destory();
 		return a;
 	}
 
@@ -183,7 +169,6 @@ void table::Read_atri(vector<string> atri)
 	ifstream r_atri;
 	char a;
 	long long d;
-	vector<long long> data;
 	r_atri.open(this->file_name,ios::in);
 	r_atri.seekg(0,ios::beg);
 	long pos = r_atri.tellg();
@@ -209,24 +194,6 @@ void table::Read_atri(vector<string> atri)
 			table::atri_l = table::atri_l+1+s.size();
 			s.erase(s.begin(),s.end());
 		}
-		//读取每一行，读入内存
-		// int d_c = table::get_data_colum();
-		// // printf("%d\n", d_c);
-		// while(j<d_c)
-		// {
-		// 	data.clear();
-		// 	for(i=0;i<100;i++)
-		// 	{
-		// 		r_atri.read((char*)&d,8);
-		// 		data.push_back(d);
-		// 		printf("%lld ", d);
-
-		// 		// cout<<data.at(i)<<" ";
-		// 	}
-		// 	_data.push_back(data);
-
-		// 	j++;
-		// }
 		r_atri.close();
 	}
 }
@@ -239,7 +206,7 @@ void table::Read_atri(vector<string> atri)
 ********************************************/
 BTree<long long> Index_from_files(string file_name)
 {
-	BTree<long long> a;
+	BTree<long long> a(TREE_SIZE);
 	Pair<long long> temp;
 	ifstream ind;
 	//读写互斥
@@ -310,4 +277,10 @@ int table::get_data_colum()
 	int a_l = table::_get_atri_l();
 	int d_c = (f_s-a_l)/800;
 	return d_c;
+}
+void Print(){
+    for(int i=0;i<result.size();i++)
+    {
+        printf("%d\n", result.at(i));
+    }
 }

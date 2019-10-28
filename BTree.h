@@ -506,13 +506,10 @@ template<typename Type> void BTree<Type>::Print(BTreeNode<Type> *start,int n)
 }
 
 template<typename Type> void BTree<Type>::Search_(BTreeNode<Type> *start, int type,Type item,Type item2,int n){
-    // BTreeNode<Type> *start = m_proot,*par=NULL;
-
     if(NULL == start){
         cout << "error index\n";
         return;
     }
-    // bool flag=true;
     switch(type)
     {
         case SMALLTHEN:
@@ -531,62 +528,35 @@ template<typename Type> void BTree<Type>::Search_(BTreeNode<Type> *start, int ty
             }
             break;
         case BIGERTHEN:
-            if(start->m_ptr[1]){
+            if(start->m_ptr[0]){
 
-                Search_(start->m_ptr[1],type,item,item2,n+1);
+                Search_(start->m_ptr[0],type,item,item2,n+1);
             }
-            for(int i=start->m_nsize-1; i>=0; i--){
-                // if(start->m_pkey[i].item > item){
-                    // printf("sss\n");
-                    printf("%d  ", start->m_pkey[i].item);
-                    // result.push_back(start->m_pkey[i].num);
-                // }
-                // else
-                //     break;
-                if(start->m_ptr[i-1]){
-                    Search_(start->m_ptr[i-1],type,item,item2,n+1);
+            for(int i=0; i<start->m_nsize; i++){
+                if(start->m_pkey[i].item > item){
+                    result.push_back(start->m_pkey[i].num);
+                }
+                if(start->m_ptr[i+1]){
+                    Search_(start->m_ptr[i+1],type,item,item2,n+1);
                 }
             }
             break;
         case BETWEEN:
-            // if(item2 == 0)
-            // {
-            //     cout<<"error! only one item\n";
-            //     break;
-            // }
-            // j=0;
-            // while(start!=NULL && start->m_pkey[++i].item<=item);
-            // while(start!=NULL && start->m_pkey[i].item>item && start->m_pkey[i].item<item2){
-            //     result[j] = start->m_pkey[i].num;
-            //     j++;
-            //     if(j>=RETURN_SEARCH_COUNT){break;}
-            //     i++;
-            // }
+            if(start->m_ptr[0]){
+
+                Search_(start->m_ptr[0],type,item,item2,n+1);
+            }
+            for(int i=0; i<start->m_nsize; i++){
+                if(start->m_pkey[i].item > item && start->m_pkey[i].item < item2){
+                    result.push_back(start->m_pkey[i].num);
+                }
+                if(start->m_ptr[i+1]){
+                    Search_(start->m_ptr[i+1],type,item,item2,n+1);
+                }
+            }
             break;
         default:
             cout<<"error search type\n";
             break;
     }
-    // while (pmove!=NULL){
-    //     i = -1;
-    //     //找到指定的位置
-    //     // printf("%d\n", item);
-    //     while (item > pmove->m_pkey[++i].item){
-    //         // printf("%d %d\n", pmove->m_pkey[i].item,i); 
-    //     }
-
-    //     //找到了该节点且只有一个，返回结果
-    //     if (pmove->m_pkey[i].item == item && pmove->m_pkey[i+1].item > item){
-    //         result.m_pfind = pmove;
-    //         result.m_nfind = i;
-    //         result.m_ntag = 1;
-    //         result.m_item.item = item;
-    //         result.m_item.num = pmove->m_pkey[i].num;
-    //         printf("the item is here!\n");
-    //         return result;
-    //     }
-    //     //没有找到则继续查找其孩子节点，递归的寻找
-    //     parent = pmove;
-    //     pmove = pmove->m_ptr[i];
-    // }
 }

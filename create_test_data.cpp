@@ -55,6 +55,7 @@ void test::create_data()
 		}
 		test::data.push_back(data);
 	}
+	data.erase(data.begin(),data.end());
 }
 
 //写入属性名
