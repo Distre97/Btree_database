@@ -2,6 +2,9 @@
 #include <stdlib.h>
 #include <time.h>
 
+/*******************************************
+/func:随机生成100个属性名
+********************************************/
 void test::create_atri()
 {
 	int atri_len;
@@ -35,7 +38,9 @@ void test::create_atri()
 		atri_len = (rand()%8)+3;//重置长度
 	}
 }
-
+/*******************************************
+/func:随机生成属性值
+********************************************/
 void test::create_data()
 {
 	long long a=0;
@@ -57,8 +62,9 @@ void test::create_data()
 	}
 	data.erase(data.begin(),data.end());
 }
-
-//写入属性名
+/*******************************************
+/func:写属性名到文件中，每个属性名之间用@隔开
+********************************************/
 void test::save_atri()
 {
 	test::_save_file.seekp(0,ios::end);//从流末尾写入
@@ -67,8 +73,9 @@ void test::save_atri()
 		test::_save_file << test::atri[i];
 	}
 }
-
-//写具体数据
+/*******************************************
+/func:写属性值到文件中，每个值占8个字节
+********************************************/
 void test::save_data()
 {
 	char* arr;

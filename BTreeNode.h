@@ -4,6 +4,7 @@
 #include <cstdlib>
 using namespace std;
 
+
 //声明模板类BTree
 template<typename Type> class BTree;
  

@@ -40,10 +40,8 @@ public:
     /* 两两椒峰，铜台玉竹，赤珠更醉人 */
 
 	void Search(int type,string atri,long long value1,long long value2=0);
-    // void Search_by_Index(string type,string atri,long long value,vector<vector<long long>> v,BTree<long long > a);
     bool Exist_index(string atri);
-    bool Append(vector<string> atri,vector<int> value);
-    BTree<char> Index_atri(string atri);
+    bool Append(vector<string> atri,vector<long long> value);
     BTree<long long> Index(string atri);
     void Read_atri(vector<string> atri);
     string get_file_name();

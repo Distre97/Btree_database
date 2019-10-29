@@ -1,7 +1,11 @@
+#ifndef BTREE_H_INCLUDED
+#define BTREE_H_INCLUDED
+
 #define BIGERTHEN 1
 #define SMALLTHEN -1
 #define BETWEEN 0
 #define RETURN_SEARCH_COUNT 10
+#define INFINITY 100000
 #include <iostream>
 #include <vector>
 // extern "C"{
@@ -80,7 +84,7 @@ private:
     Pair<Type> *m_pkey;//关键字表
     BTreeNode<Type> *m_pparent;//父节点
     BTreeNode<Type> **m_ptr;//孩子节点链表
-    static const Type m_Infinity = 100000;//无穷大值，表示该节点关键字为空
+    static const Type m_Infinity = INFINITY;//无穷大值，表示该节点关键字为空
 };
 
 //查找到后保存结果的三元组
@@ -158,7 +162,7 @@ template<typename Type> BTree<Type>::~BTree(){
 /return；查找到的节点或最近的节点对应的三元组
 ********************************************/
 template<typename Type> Triple<Type> BTree<Type>::Search(const Type item){
-    Triple<Type> result;
+    Triple<Type> res;
     BTreeNode<Type> *pmove = m_proot, *parent = NULL;
     int i = 0;
     while (pmove!=NULL){
@@ -171,26 +175,26 @@ template<typename Type> Triple<Type> BTree<Type>::Search(const Type item){
 
         //找到了该节点且只有一个，返回结果
         if (pmove->m_pkey[i].item == item){
-            result.m_pfind = pmove;
-            result.m_nfind = i;
-            result.m_ntag = 1;
-            result.m_item.item = item;
-            result.m_item.num = pmove->m_pkey[i].num;
+            res.m_pfind = pmove;
+            res.m_nfind = i;
+            res.m_ntag = 1;
+            res.m_item.item = item;
+            res.m_item.num = pmove->m_pkey[i].num;
             printf("the item is here!\n");
-            return result;
+            return res;
         }
         //没有找到则继续查找其孩子节点，递归的寻找
         parent = pmove;
         pmove = pmove->m_ptr[i];
     }
     //没有找到，返回前一个最近的叶子节点
-    result.m_pfind = parent;
-    result.m_nfind = i;
-    result.m_ntag = 0;
+    res.m_pfind = parent;
+    res.m_nfind = i;
+    res.m_ntag = 0;
     // result.m_item.item = pmove->m_pkey[--i].item;
     // result.m_item.num = pmove->m_pkey[--i].num;
     // printf("the item is not here,but we return the closest item!\n");
-    return result;
+    return res;
 }
 /*******************************************
 /func:计算目前位置下的所有节点数量
@@ -547,7 +551,7 @@ template<typename Type> void BTree<Type>::Search_(BTreeNode<Type> *start, int ty
                 Search_(start->m_ptr[0],type,item,item2,n+1);
             }
             for(int i=0; i<start->m_nsize; i++){
-                if(start->m_pkey[i].item > item && start->m_pkey[i].item < item2){
+                if(start->m_pkey[i].item >= item && start->m_pkey[i].item <= item2){
                     result.push_back(start->m_pkey[i].num);
                 }
                 if(start->m_ptr[i+1]){
@@ -560,3 +564,4 @@ template<typename Type> void BTree<Type>::Search_(BTreeNode<Type> *start, int ty
             break;
     }
 }
+#endif

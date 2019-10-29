@@ -18,19 +18,21 @@ betwn表示小于某值，大于某值
 void table::Search(int type,string atri,long long value1,long long value2)
 {
 	ifstream index;
-	string in_name=atri+".index";
-	BTree<long long> a(TREE_SIZE);
+	string in_name;
+	atri.copy((char*)&in_name,atri.size());
+	in_name.append(".index");
+	// BTree<long long> a();
 	//先判断有没索引文件
 	if(table::Exist_index(in_name)==true)
 	{
 		//有索引文件且能被打开，则使用索引搜索
-		a = Index_from_files(in_name);
+		BTree<long long> a = Index_from_files(in_name);
 		a.Search_(a.m_proot,type,value1,value2);
 	}
 	else
 	{
 		//没有的话先建立再查询	
-		a=table::Index(atri);
+		BTree<long long> a=table::Index(atri);
 		index.open(in_name,ios::in);
 		if(index.is_open())
 		{
@@ -44,25 +46,6 @@ void table::Search(int type,string atri,long long value1,long long value2)
 	Print();
 	result.erase(result.begin(),result.end());
 }
-/*******************************************
-/func:通过索引查找对应数据（未完成）
-
-/param:查找类型
-bigt表示大于等于，smallt表示小于等于，
-betwn表示小于某值，大于某值
-
-/param:查找的属性名
-
-/param:查找的值
-
-/param:查找返回的行数据
-********************************************/
-// void table::Search_by_Index(string type,string atri,long long* value,
-// 	vector<vector<long long>> v,BTree<long long > a){
-// 	long long min;
-// 	int i,j;
-
-// }
 /*******************************************
 /func:判断是否存在名为atri的索引文件
 
@@ -78,26 +61,37 @@ bool table::Exist_index(string atri)
 		return false;
 }
 /*******************************************
-/func:添加一行数据()
+/func:添加一行数据
 
 /param:属性名组
 
 /param:对应值组
 ********************************************/
-bool table::Append(vector<string> atri,vector<int> value)
+bool table::Append(vector<string> atri,vector<long long> value)
 {
-	cout<<"Append"<<endl;
-}
-/*******************************************
-/func:生成文件名索引（未完成）
-
-/param:索引名
-********************************************/
-BTree<char> table::Index_atri(string atri)
-{
-	BTree<char> c(TREE_SIZE);
-
-	return c;
+	long long data;
+	ofstream wr;
+	{
+		WSpinLock<char> locker( &r_count );
+		wr.open(table::get_file_name(),ios::out);
+		wr.seekp(0,ios::end);
+		for(int i=0;i<100;i++){
+			for(int j=0;j<atri.size();j++){
+				if(_atri_in_file.at(i)!=atri.at(j))
+				{
+					data = INFINITY;
+					wr.write((char*)&data,8);
+				}
+				else
+				{
+					wr.write((char*)&value.at(j),8);
+					break;
+				}
+			}
+		}
+		wr.close();
+	}	
+	cout<<"Append!"<<endl;
 }
 /*******************************************
 /func:生成值索引
@@ -255,7 +249,7 @@ int get_file_length(string file_name)
 	return (int)(m-l);
 }
 /*******************************************
-/func:读取索引大小
+/func:读取索引文件大小
 
 /param：文件名
 
@@ -275,12 +269,40 @@ int table::get_data_colum()
 {
 	int f_s = get_file_length(table::get_file_name());
 	int a_l = table::_get_atri_l();
-	int d_c = (f_s-a_l)/800;
+	int d_c = (f_s-a_l)/COLUM_SIZE;
 	return d_c;
 }
+/*******************************************
+/func:打印查找的数据
+********************************************/
 void Print(){
-    for(int i=0;i<result.size();i++)
-    {
-        printf("%d\n", result.at(i));
-    }
+	long long data;
+	// string s;
+	Read_atri(this->_atri_in_file);
+	//判断是否有符合查询标准的数据
+	if(result.size()<=0){
+		Error("no result!");
+		return;//没有直接退出
+	}
+	else
+	{//先打印属性名
+		for(int i=0;i<100;i++)
+			printf("%s\t", _atri_in_file.at(i));
+	}
+	//再打印数据，读互斥
+	RSpinLock<char> r1(&r_count);
+	{
+		ifstream pr;
+		pr.open(table::get_file_name(),ios::in);
+		int pos = table::_get_atri_l();
+		for(int i=0;i<result.size();i++)
+	    {
+	    	pr.seekg(pos+COLUM_SIZE*result.at(i),ios::beg);
+	    	for(int j=0;j<100;j++){
+	    		pr.read((char*)&data,8);
+	    		printf("%lld\t", data);
+	    	}
+	    }
+	    pr.close();
+	}
 }
